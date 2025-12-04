@@ -1,0 +1,27 @@
+services:
+  reverse-proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: moonshot-reverse-proxy
+    ports:
+      - "8000:8000"
+    environment:
+      - RATE_LIMIT_RPS=${RATE_LIMIT_RPS}
+      - RATE_LIMIT_BURST=${RATE_LIMIT_BURST}
+      - MAX_RETRIES=${MAX_RETRIES}
+      - BACKOFF_BASE_SECONDS=${BACKOFF_BASE_SECONDS}
+      - BACKOFF_MAX_SECONDS=${BACKOFF_MAX_SECONDS}
+      - JITTER_ENABLED=${JITTER_ENABLED}
+      - OPENLIGA_BASE_URL=${OPENLIGA_BASE_URL}
+      - REQUEST_TIMEOUT_SECONDS=${REQUEST_TIMEOUT_SECONDS}
+    env_file:
+      - .env
+    healthcheck:
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
